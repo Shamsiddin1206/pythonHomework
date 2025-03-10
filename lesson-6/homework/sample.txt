@@ -1,0 +1,2 @@
+Python is amazing! Python is easy to learn.
+This text file is for testing Python scripts.

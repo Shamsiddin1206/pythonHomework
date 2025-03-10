@@ -1,0 +1,8 @@
+Word Count Report
+Total Words: 16
+Top Words:
+python - 3
+is - 3
+amazing - 1
+easy - 1
+to - 1
