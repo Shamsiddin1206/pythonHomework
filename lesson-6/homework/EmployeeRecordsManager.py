@@ -1,107 +1,97 @@
 import os
 
-FILE_NAME = "employees.txt"
+EMPLOYEE_FILE = "employees.txt"
 
+def ensure_file_exists():
+    if not os.path.exists(EMPLOYEE_FILE):
+        with open(EMPLOYEE_FILE, "w", encoding="utf-8"):
+            pass  # Create an empty file
+
+def load_employees():
+    employees = []
+    with open(EMPLOYEE_FILE, "r", encoding="utf-8") as file:
+        for line in file:
+            employees.append(line.strip().split(", "))
+    return employees
+
+def save_employees(employees):
+    with open(EMPLOYEE_FILE, "w", encoding="utf-8") as file:
+        for emp in employees:
+            file.write(", ".join(emp) + "\n")
+
+def validate_numeric_input(prompt):
+    while True:
+        value = input(prompt).strip()
+        if value.isdigit():
+            return value
+        print("Invalid input! Please enter a numeric value.")
 
 def add_employee():
-    emp_id = input("Enter Employee ID: ")
-    name = input("Enter Name: ")
-    position = input("Enter Position: ")
-    salary = input("Enter Salary: ")
-
-    with open(FILE_NAME, "a") as file:
-        file.write(f"{emp_id}, {name}, {position}, {salary}\n")
-
-    print("Employee record added successfully!")
-
+    employees = load_employees()
+    emp_id = validate_numeric_input("Enter Employee ID: ")
+    name = input("Enter Name: ").strip()
+    position = input("Enter Position: ").strip()
+    salary = validate_numeric_input("Enter Salary: ")
+    employees.append([emp_id, name, position, salary])
+    save_employees(employees)
+    print("Employee record added successfully!\n")
 
 def view_employees():
-    if not os.path.exists(FILE_NAME) or os.stat(FILE_NAME).st_size == 0:
-        print("No employee records found.")
+    employees = load_employees()
+    if not employees:
+        print("No employee records found.\n")
         return
-
-    with open(FILE_NAME, "r") as file:
-        print("\nEmployee Records:")
-        for line in file:
-            print(line.strip())
-
+    print("\nEmployee Records:")
+    for emp in employees:
+        print(f"ID: {emp[0]}, Name: {emp[1]}, Position: {emp[2]}, Salary: {emp[3]}")
+    print()
 
 def search_employee():
-    emp_id = input("Enter Employee ID to search: ")
-    found = False
-
-    with open(FILE_NAME, "r") as file:
-        for line in file:
-            record = line.strip().split(", ")
-            if record[0] == emp_id:
-                print("Employee Found:", line.strip())
-                found = True
-                break
-
-    if not found:
-        print("Employee not found.")
-
+    employees = load_employees()
+    emp_id = validate_numeric_input("Enter Employee ID to search: ")
+    for emp in employees:
+        if emp[0] == emp_id:
+            print(f"Found: ID: {emp[0]}, Name: {emp[1]}, Position: {emp[2]}, Salary: {emp[3]}\n")
+            return
+    print("Employee not found.\n")
 
 def update_employee():
-    emp_id = input("Enter Employee ID to update: ")
-    updated_lines = []
-    found = False
-
-    with open(FILE_NAME, "r") as file:
-        for line in file:
-            record = line.strip().split(", ")
-            if record[0] == emp_id:
-                print(f"Current Record: {line.strip()}")
-                name = input("Enter new Name (leave blank to keep current): ") or record[1]
-                position = input("Enter new Position (leave blank to keep current): ") or record[2]
-                salary = input("Enter new Salary (leave blank to keep current): ") or record[3]
-                updated_lines.append(f"{emp_id}, {name}, {position}, {salary}\n")
-                found = True
-            else:
-                updated_lines.append(line)
-
-    if found:
-        with open(FILE_NAME, "w") as file:
-            file.writelines(updated_lines)
-        print("Employee record updated successfully!")
-    else:
-        print("Employee ID not found.")
-
+    employees = load_employees()
+    emp_id = validate_numeric_input("Enter Employee ID to update: ")
+    for emp in employees:
+        if emp[0] == emp_id:
+            emp[1] = input("Enter new name (leave blank to keep current): ") or emp[1]
+            emp[2] = input("Enter new position (leave blank to keep current): ") or emp[2]
+            new_salary = input("Enter new salary (leave blank to keep current): ").strip()
+            emp[3] = new_salary if new_salary.isdigit() else emp[3]
+            save_employees(employees)
+            print("Employee record updated successfully!\n")
+            return
+    print("Employee not found.\n")
 
 def delete_employee():
-    emp_id = input("Enter Employee ID to delete: ")
-    updated_lines = []
-    found = False
-
-    with open(FILE_NAME, "r") as file:
-        for line in file:
-            record = line.strip().split(", ")
-            if record[0] == emp_id:
-                print(f"Deleting Record: {line.strip()}")
-                found = True
-            else:
-                updated_lines.append(line)
-
-    if found:
-        with open(FILE_NAME, "w") as file:
-            file.writelines(updated_lines)
-        print("Employee record deleted successfully!")
+    employees = load_employees()
+    emp_id = validate_numeric_input("Enter Employee ID to delete: ")
+    new_employees = [emp for emp in employees if emp[0] != emp_id]
+    if len(new_employees) == len(employees):
+        print("Employee not found.\n")
     else:
-        print("Employee ID not found.")
-
+        save_employees(new_employees)
+        print("Employee record deleted successfully!\n")
 
 def main():
+    ensure_file_exists()
     while True:
-        print("\nEmployee Records Manager")
-        print("1. Add new employee record")
-        print("2. View all employee records")
-        print("3. Search for an employee by ID")
-        print("4. Update an employee's information")
-        print("5. Delete an employee record")
-        print("6. Exit")
-
-        choice = input("Choose an option: ")
-
+        print("""
+        Employee Records Manager
+        1. Add new employee record
+        2. View all employee records
+        3. Search for an employee by Employee ID
+        4. Update an employee's information
+        5. Delete an employee record
+        6. Exit
+        """)
+        choice = input("Enter your choice: ")
         if choice == "1":
             add_employee()
         elif choice == "2":
@@ -113,11 +103,10 @@ def main():
         elif choice == "5":
             delete_employee()
         elif choice == "6":
-            print("Exiting program...")
+            print("Exiting program. Goodbye!")
             break
         else:
-            print("Invalid choice, please try again.")
-
+            print("Invalid choice. Please enter a number between 1-6.")
 
 if __name__ == "__main__":
     main()
